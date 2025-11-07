@@ -1,0 +1,32 @@
+{
+	"name": "automations",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev --webpack",
+		"build": "next build --webpack",
+		"start": "next start",
+		"lint": "eslint",
+		"worker": "node --env-file=.env scripts/worker.js",
+		"setup:client": "node scripts/setup-client.js"
+	},
+	"dependencies": {
+		"axios": "^1.13.2",
+		"cloudinary": "^2.8.0",
+		"googleapis": "^164.1.0",
+		"lucide-react": "^0.553.0",
+		"motion": "^12.23.24",
+		"next": "16.0.1",
+		"openai": "^6.8.1",
+		"react": "19.2.0",
+		"react-dom": "^19.2.0",
+		"swr": "^2.3.6"
+	},
+	"devDependencies": {
+		"@tailwindcss/postcss": "^4",
+		"babel-plugin-react-compiler": "1.0.0",
+		"eslint": "^9",
+		"eslint-config-next": "16.0.1",
+		"tailwindcss": "^4"
+	}
+}
