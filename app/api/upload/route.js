@@ -10,16 +10,13 @@ export async function POST(req) {
 		const file = data.get("file");
 		if (!file) throw new Error("No file uploaded");
 
-		// Use OS temp directory (cross-platform safe)
 		const buffer = Buffer.from(await file.arrayBuffer());
 		const tmpDir = os.tmpdir();
 		const tmpPath = path.join(tmpDir, file.name);
 		await fs.writeFile(tmpPath, buffer);
 
-		// Upload to Cloudinary
 		const url = await uploadToCloudinary(tmpPath);
 
-		// Optionally remove the temp file (cleanup)
 		try {
 			await fs.unlink(tmpPath);
 		} catch (_) {}
@@ -30,3 +27,11 @@ export async function POST(req) {
 		return NextResponse.json({ error: err.message }, { status: 500 });
 	}
 }
+
+// ✅ Fix large file uploads without changing logic
+export const config = {
+	api: {
+		bodyParser: false,
+		sizeLimit: "200mb", // or "25mb" depending on your video size
+	},
+};
