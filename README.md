@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🎥 Vibcoding Reels Automation Dashboard
 
-## Getting Started
+A **Next.js-powered automation platform** for creators and small agencies to schedule, auto-post, and track Instagram Reels — fully integrated with **Google Sheets** for management and **Instagram Graph API** for publishing.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+✅ **Upload & Schedule Reels**  
+Upload videos (via Cloudinary) and schedule them directly from your dashboard.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+✅ **AI Caption Generator**  
+Automatically generate engaging, viral captions using **OpenRouter (LLaMA 3.1 / GPT)**.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+✅ **Instagram Auto-Publishing**  
+Auto-upload Reels to your connected Instagram Business account using the **Graph API**.
 
-## Learn More
+✅ **Google Sheets Sync**  
+All scheduled reels are stored, updated, and tracked in **Google Sheets** for transparency and backup.
 
-To learn more about Next.js, take a look at the following resources:
+✅ **Real-Time Dashboard**  
+Live stats and status updates using **SWR** and **Next.js App Router**.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+✅ **Cron Automation**  
+A built-in `/api/cron/run` endpoint ensures scheduled Reels are auto-published on time (works with Vercel Cron Jobs).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🧠 Tech Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Frontend:** Next.js 14, Tailwind CSS, Framer Motion
+- **Backend:** Next.js API Routes
+- **Database:** Google Sheets (via Google Service Account)
+- **Integrations:**
+  - Instagram Graph API (v24.0)
+  - Google Cloud Service Account (Sheets API)
+  - OpenRouter API (for AI captions)
+- **Deployment:** Vercel
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🧩 Project Structure
+
