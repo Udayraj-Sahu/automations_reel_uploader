@@ -43,7 +43,7 @@ export default function ScheduleForm() {
 		formData.append("folder", "reels");
 
 		try {
-			const cloudName = "vibcoding"; // e.g. vibcoding
+			const cloudName = "dk21q1aec"; // e.g. vibcoding
 			const res = await fetch(
 				`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
 				{ method: "POST", body: formData }
