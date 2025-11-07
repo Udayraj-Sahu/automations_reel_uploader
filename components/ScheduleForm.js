@@ -29,8 +29,7 @@ export default function ScheduleForm() {
 	const [submitting, setSubmitting] = useState(false);
 	const [success, setSuccess] = useState(false);
 	const [generating, setGenerating] = useState(false);
-
-	// ✅ Upload to Cloudinary
+	// ✅ Upload directly to Cloudinary — bypass 413
 	const handleFileUpload = async (e) => {
 		const file = e.target.files[0];
 		if (!file) return;
@@ -40,19 +39,26 @@ export default function ScheduleForm() {
 
 		const formData = new FormData();
 		formData.append("file", file);
+		formData.append("upload_preset", "reel_upload"); // your unsigned preset
+		formData.append("folder", "reels");
 
 		try {
-			const res = await fetch("/api/upload", {
-				method: "POST",
-				body: formData,
-			});
+			const cloudName = "vibcoding"; // e.g. vibcoding
+			const res = await fetch(
+				`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+				{ method: "POST", body: formData }
+			);
 
 			const data = await res.json();
-			if (res.ok && data.url) {
-				setForm((prev) => ({ ...prev, videoUrl: data.url }));
+
+			if (data.secure_url) {
+				setForm((prev) => ({ ...prev, videoUrl: data.secure_url }));
 				setMsg("✅ Video uploaded successfully!");
 			} else {
-				setMsg("❌ Upload failed: " + (data.error || "Unknown error"));
+				setMsg(
+					"❌ Upload failed: " +
+						(data.error?.message || "Unknown error")
+				);
 			}
 		} catch (err) {
 			setMsg("❌ Network error: " + err.message);
