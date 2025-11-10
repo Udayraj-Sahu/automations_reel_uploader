@@ -10,57 +10,73 @@ import {
 } from "lucide-react";
 
 export default function StatusBadge({ label, status }) {
-	const config = {
-		scheduled: {
-			icon: Clock,
-			text: "Scheduled",
-			style: "bg-orange-100 text-orange-700 border border-orange-200",
-			iconColor: "text-orange-500",
-		},
-		published: {
-			icon: CheckCircle,
-			text: "Published",
-			style: "bg-green-100 text-green-700 border border-green-200",
-			iconColor: "text-green-500",
-		},
-		failed: {
-			icon: XCircle,
-			text: "Failed",
-			style: "bg-red-100 text-red-700 border border-red-200",
-			iconColor: "text-red-500",
-		},
-		publishing: {
-			icon: Loader2,
-			text: "Publishing...",
-			style: "bg-purple-100 text-purple-700 border border-purple-200",
-			iconColor: "text-purple-500",
-		},
-	}[status] || {
-		icon: Clock,
-		text: status || "Pending",
-		style: "bg-gray-100 text-gray-700 border border-gray-200",
-		iconColor: "text-gray-500",
-	};
+	let icon, color, textColor, bgColor, borderColor;
 
-	const Icon = config.icon;
+	// Base color logic by platform label
+	if (label === "IG") {
+		color = "text-pink-500";
+		bgColor = "bg-pink-100";
+		borderColor = "border-pink-200";
+		textColor = "text-pink-700";
+		icon = Instagram;
+	} else if (label === "YT") {
+		color = "text-red-500";
+		bgColor = "bg-red-100";
+		borderColor = "border-red-200";
+		textColor = "text-red-700";
+		icon = Youtube;
+	} else {
+		color = "text-gray-500";
+		bgColor = "bg-gray-100";
+		borderColor = "border-gray-200";
+		textColor = "text-gray-700";
+		icon = Clock;
+	}
 
-	const platformIcon =
-		label?.toLowerCase() === "ig" ? (
-			<Instagram className="w-3.5 h-3.5 text-pink-600" />
-		) : label?.toLowerCase() === "yt" ? (
-			<Youtube className="w-3.5 h-3.5 text-red-600" />
-		) : null;
+	let IconComponent = icon;
+	let text = status;
+
+	// 🟢 Switch icon & style dynamically based on status
+	switch (status) {
+		case "posted":
+			IconComponent = CheckCircle;
+			color = "text-green-500";
+			bgColor = "bg-green-100";
+			borderColor = "border-green-200";
+			textColor = "text-green-700";
+			text = "posted";
+			break;
+
+		case "failed":
+			IconComponent = XCircle;
+			color = "text-red-500";
+			bgColor = "bg-red-100";
+			borderColor = "border-red-200";
+			textColor = "text-red-700";
+			text = "failed";
+			break;
+
+		case "publishing":
+			IconComponent = Loader2;
+			color = "text-purple-500";
+			bgColor = "bg-purple-100";
+			borderColor = "border-purple-200";
+			textColor = "text-purple-700";
+			text = "publishing...";
+			break;
+
+		default:
+			// Keep original icon (YouTube / Instagram) for pending
+			text = "pending";
+			break;
+	}
 
 	return (
 		<motion.span
-			className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${config.style}`}
-			initial={{ scale: 0.9, opacity: 0 }}
+			className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${bgColor} ${borderColor} ${textColor}`}
+			initial={{ scale: 0.8, opacity: 0 }}
 			animate={{ scale: 1, opacity: 1 }}
 			transition={{ type: "spring", stiffness: 300, damping: 20 }}>
-			{/* Platform Icon */}
-			{platformIcon}
-
-			{/* Status Icon */}
 			<motion.div
 				animate={
 					status === "publishing" ? { rotate: 360 } : { rotate: 0 }
@@ -70,14 +86,10 @@ export default function StatusBadge({ label, status }) {
 						? { duration: 1, repeat: Infinity, ease: "linear" }
 						: {}
 				}>
-				<Icon className={`w-4 h-4 ${config.iconColor}`} />
+				<IconComponent className={`w-4 h-4 ${color}`} />
 			</motion.div>
-
-			{/* Label Text */}
-			<span>{config.text}</span>
-
-			{/* Animated dot for published */}
-			{status === "published" && (
+			<span className="capitalize">{text}</span>
+			{status === "posted" && (
 				<motion.div
 					className="w-2 h-2 bg-green-500 rounded-full"
 					animate={{ scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }}
