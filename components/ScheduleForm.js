@@ -9,6 +9,7 @@ import {
 	FileVideo,
 	Type,
 	Sparkles,
+	Globe,
 } from "lucide-react";
 
 function generateId() {
@@ -17,38 +18,40 @@ function generateId() {
 
 export default function ScheduleForm() {
 	const [form, setForm] = useState({
-		videoFile: null,
 		videoUrl: "",
 		title: "",
 		topic: "",
 		caption: "",
 		scheduledAt: "",
+		platforms: [], // ✅ new field
 	});
 	const [msg, setMsg] = useState("");
 	const [uploading, setUploading] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
 	const [success, setSuccess] = useState(false);
 	const [generating, setGenerating] = useState(false);
-	// ✅ Upload directly to Cloudinary — bypass 413
+
+	// ✅ Upload to Cloudinary
 	const handleFileUpload = async (e) => {
 		const file = e.target.files[0];
 		if (!file) return;
-
 		setUploading(true);
 		setMsg("⏳ Uploading video to Cloudinary...");
 
 		const formData = new FormData();
 		formData.append("file", file);
-		formData.append("upload_preset", "reel_upload"); // your unsigned preset
+		formData.append("upload_preset", "reel_upload");
 		formData.append("folder", "reels");
 
 		try {
-			const cloudName = "dk21q1aec"; // e.g. vibcoding
+			const cloudName = "dk21q1aec";
 			const res = await fetch(
 				`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
-				{ method: "POST", body: formData }
+				{
+					method: "POST",
+					body: formData,
+				}
 			);
-
 			const data = await res.json();
 
 			if (data.secure_url) {
@@ -67,13 +70,10 @@ export default function ScheduleForm() {
 		setUploading(false);
 	};
 
-	// ✅ AI Generate Caption
+	// ✅ AI Caption
 	const handleGenerateCaption = async () => {
-		if (!form.title && !form.topic) {
-			setMsg("⚠️ Please enter a title or topic first.");
-			return;
-		}
-
+		if (!form.title && !form.topic)
+			return setMsg("⚠️ Please enter a title or topic first.");
 		setGenerating(true);
 		setMsg("🤖 Generating caption using AI...");
 
@@ -81,20 +81,14 @@ export default function ScheduleForm() {
 			const res = await fetch("/api/ai/generate-caption", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					title: form.title,
-					topic: form.topic,
-				}),
+				body: JSON.stringify({ title: form.title, topic: form.topic }),
 			});
 
 			const data = await res.json();
-
 			if (res.ok && data.caption) {
 				setForm((prev) => ({ ...prev, caption: data.caption }));
 				setMsg("✅ Caption generated successfully!");
-			} else {
-				setMsg("❌ Failed to generate caption: " + data.error);
-			}
+			} else setMsg("❌ Failed to generate caption: " + data.error);
 		} catch (err) {
 			setMsg("❌ " + err.message);
 		}
@@ -102,21 +96,37 @@ export default function ScheduleForm() {
 		setGenerating(false);
 	};
 
-	// ✅ Schedule reel
+	// ✅ Toggle platform
+	const togglePlatform = (platform) => {
+		setForm((prev) => {
+			const has = prev.platforms.includes(platform);
+			return {
+				...prev,
+				platforms: has
+					? prev.platforms.filter((p) => p !== platform)
+					: [...prev.platforms, platform],
+			};
+		});
+	};
+
+	// ✅ Schedule post
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		if (!form.videoUrl) return alert("Upload your video first!");
+		if (form.platforms.length === 0)
+			return alert("Select at least one platform.");
+
 		setSubmitting(true);
-		setMsg("⏳ Scheduling reel...");
+		setMsg("⏳ Scheduling content...");
 
 		const body = {
 			id: generateId(),
-			influencer:
-				process.env.NEXT_PUBLIC_APP_NAME || "Default Influencer",
 			videoUrl: form.videoUrl,
 			title: form.title,
 			topic: form.topic,
 			caption: form.caption,
 			scheduledAt: form.scheduledAt,
+			platforms: form.platforms, // ✅ send selected platforms
 		};
 
 		try {
@@ -127,20 +137,19 @@ export default function ScheduleForm() {
 			});
 
 			const json = await res.json();
-
 			if (res.ok) {
 				setMsg("✅ Scheduled successfully!");
 				setSuccess(true);
 				setForm({
-					videoFile: null,
 					videoUrl: "",
 					title: "",
 					topic: "",
 					caption: "",
 					scheduledAt: "",
+					platforms: [],
 				});
 			} else {
-				setMsg("❌ " + (json.error || "Error scheduling reel"));
+				setMsg("❌ " + (json.error || "Error scheduling post"));
 			}
 		} catch (err) {
 			setMsg("❌ " + err.message);
@@ -170,11 +179,10 @@ export default function ScheduleForm() {
 				</h2>
 			</div>
 
-			{/* Video Upload */}
+			{/* Upload */}
 			<div>
 				<label className="block text-sm font-medium text-gray-700 mb-1">
-					<FileVideo className="w-4 h-4 inline mr-1" />
-					Video File
+					<FileVideo className="w-4 h-4 inline mr-1" /> Video File
 				</label>
 				<motion.div
 					className="relative border-2 border-dashed border-purple-200 rounded-xl p-6 text-center hover:border-purple-400 transition-colors cursor-pointer"
@@ -219,12 +227,11 @@ export default function ScheduleForm() {
 				</motion.div>
 			</div>
 
-			{/* Title & Topic */}
+			{/* Title + Topic */}
 			<div className="grid grid-cols-2 gap-3">
 				<div>
 					<label className="block text-sm text-gray-700 mb-1">
-						<Type className="w-4 h-4 inline mr-1" />
-						Title
+						<Type className="w-4 h-4 inline mr-1" /> Title
 					</label>
 					<input
 						className="border p-2 rounded w-full"
@@ -242,7 +249,7 @@ export default function ScheduleForm() {
 					</label>
 					<input
 						className="border p-2 rounded w-full"
-						placeholder="e.g., Productivity"
+						placeholder="e.g., Motivation"
 						value={form.topic}
 						onChange={(e) =>
 							setForm({ ...form, topic: e.target.value })
@@ -251,12 +258,11 @@ export default function ScheduleForm() {
 				</div>
 			</div>
 
-			{/* Caption + AI Button */}
+			{/* Caption + AI */}
 			<div>
 				<div className="flex items-center justify-between mb-1">
 					<label className="block text-sm text-gray-700">
-						<Sparkles className="w-4 h-4 inline mr-1" />
-						Caption
+						<Sparkles className="w-4 h-4 inline mr-1" /> Caption
 					</label>
 					<motion.button
 						type="button"
@@ -271,7 +277,7 @@ export default function ScheduleForm() {
 						}`}>
 						{generating ? (
 							<>
-								<Loader2 className="w-3 h-3 animate-spin" />
+								<Loader2 className="w-3 h-3 animate-spin" />{" "}
 								Generating...
 							</>
 						) : (
@@ -295,8 +301,7 @@ export default function ScheduleForm() {
 			{/* Schedule */}
 			<div>
 				<label className="block text-sm text-gray-700 mb-1">
-					<Calendar className="w-4 h-4 inline mr-1" />
-					Schedule Time
+					<Calendar className="w-4 h-4 inline mr-1" /> Schedule Time
 				</label>
 				<input
 					type="datetime-local"
@@ -307,6 +312,31 @@ export default function ScheduleForm() {
 					}
 					required
 				/>
+			</div>
+
+			{/* ✅ Platform Selection */}
+			<div>
+				<label className="block text-sm text-gray-700 mb-1">
+					<Globe className="w-4 h-4 inline mr-1" /> Choose Platforms
+				</label>
+				<div className="flex gap-4 text-sm">
+					<label className="flex items-center gap-1 cursor-pointer">
+						<input
+							type="checkbox"
+							checked={form.platforms.includes("instagram")}
+							onChange={() => togglePlatform("instagram")}
+						/>{" "}
+						Instagram
+					</label>
+					<label className="flex items-center gap-1 cursor-pointer">
+						<input
+							type="checkbox"
+							checked={form.platforms.includes("youtube")}
+							onChange={() => togglePlatform("youtube")}
+						/>{" "}
+						YouTube
+					</label>
+				</div>
 			</div>
 
 			{/* Submit */}
@@ -348,8 +378,7 @@ export default function ScheduleForm() {
 							animate={{ opacity: 1, y: 0 }}
 							exit={{ opacity: 0, y: -10 }}
 							className="flex items-center justify-center">
-							<Upload className="w-5 h-5 mr-2" />
-							Add to Schedule
+							<Upload className="w-5 h-5 mr-2" /> Add to Schedule
 						</motion.span>
 					)}
 				</AnimatePresence>

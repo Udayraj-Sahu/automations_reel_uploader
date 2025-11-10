@@ -8,7 +8,7 @@ export async function GET() {
 
 export async function POST(req) {
 	const body = await req.json();
-	const required = ["id", "influencer", "videoUrl", "title", "scheduledAt"];
+	const required = ["id", "videoUrl", "title", "scheduledAt"];
 	for (const k of required)
 		if (!body[k])
 			return NextResponse.json(
@@ -18,7 +18,7 @@ export async function POST(req) {
 
 	const job = {
 		id: body.id,
-		influencer: body.influencer,
+
 		videoUrl: body.videoUrl,
 		title: body.title,
 		topic: body.topic || "",

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { uploadReel } from "@/lib/instagram";
 import { generateCaption } from "@/lib/ai";
-import { updateJob } from "@/lib/sheets"; // ✅ Add this import
+import { updateJob } from "@/lib/sheets";
 
 export async function POST(req) {
 	try {
-		const { id, videoUrl, title, topic } = await req.json(); // ✅ include id
+		const { id, videoUrl, title, topic } = await req.json();
 		if (!videoUrl) throw new Error("Missing videoUrl");
 
 		// Generate caption
@@ -19,17 +19,16 @@ export async function POST(req) {
 
 		console.log("✅ Reel published successfully:", result.permalink);
 
-		// ✅ Update the corresponding job in Google Sheets
+		// ✅ Update Instagram-specific status in Google Sheets
 		if (id) {
 			await updateJob(id, {
-				status: "posted",
-				permalink: result.permalink,
+				instagramStatus: "posted",
+				instagramPermalink: result.permalink,
 				caption,
 				mediaId: result.mediaId || "",
 			});
 		}
 
-		// ✅ Return success explicitly
 		return NextResponse.json({
 			success: true,
 			caption,
@@ -41,6 +40,13 @@ export async function POST(req) {
 			"❌ Publish route error:",
 			err.response?.data || err.message
 		);
+
+		// ✅ Update Instagram status to failed if something goes wrong
+		try {
+			const body = await req.json().catch(() => ({}));
+			if (body.id)
+				await updateJob(body.id, { instagramStatus: "failed" });
+		} catch (_) {}
 
 		if (err.message?.includes("Reel published successfully")) {
 			return NextResponse.json(
